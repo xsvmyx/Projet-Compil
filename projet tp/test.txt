@@ -1,0 +1,6 @@
+DEBUT 
+NUM x <- 5;
+TEXT t<-"hello";
+NUM i;
+REAL x1<- 5.8;
+FIN
