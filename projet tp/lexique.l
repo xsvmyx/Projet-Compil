@@ -18,7 +18,8 @@ TEXT {return DTEXT;}
 [0-9]+\.[0-9]+ { yylval.real = atof(yytext);  return REAL ;}
 [0-9]+        { yylval.num = atoi(yytext); return NUM; }
 \"[^\"]*\" { yylval.text = strdup(yytext); return TEXT; }
-
+--[^\n]*## {printf("commentaire sur une ligne\n");}
+\{-(.|\n)*-\} {printf("commentaire sur plusieurs lignes\n");}
 [ \t\n]              { /* Ignorer les espaces */ }
 
 
