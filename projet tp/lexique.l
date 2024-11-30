@@ -2,7 +2,7 @@
 #include "syntax.tab.h"
 extern YYSTYPE yylval;
 %}
-
+%option yylineno
 %%
 
 DEBUT {return DEBUT;}
@@ -12,6 +12,10 @@ NUM {return DNUM;}
 REAL {return DREAL;}
 TEXT {return DTEXT;}
 "<-" {return aff;}
+"+" {return '+';}
+"-" {return '-';}
+"*" {return '*';}
+"/" {return '/';}
 ";"  { return ';'; }
 [a-zA-Z][a-zA-Z0-9_]* { yylval.text = strdup(yytext); return ID; }
 
@@ -21,6 +25,8 @@ TEXT {return DTEXT;}
 --[^\n]*## {printf("commentaire sur une ligne\n");}
 \{-(.|\n)*-\} {printf("commentaire sur plusieurs lignes\n");}
 [ \t\n]              { /* Ignorer les espaces */ }
+\{ {return DINS;}
+\} {return FINS;}
 
 
 .                    { printf("Caractère inattendu : %s\n", yytext); }

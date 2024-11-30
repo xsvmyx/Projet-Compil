@@ -1,6 +1,15 @@
 DEBUT 
 NUM x <- 5;
 TEXT t<-"hello";
-NUM i;
+NUM i <-2;
+
+
+{-
+-}
 REAL x1<- 5.8;
+
+EXECUTION
+{
+x<-i+5*i/0;
+}
 FIN
