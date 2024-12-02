@@ -1,7 +1,9 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+
 extern yylineno;
+char SauvType[20];
 %}
 
 %union {
@@ -18,35 +20,35 @@ extern yylineno;
 
 %%
 program:
-     DEBUT var_list EXECUTION DINS inst_list FINS FIN { printf("Programme syntaxiquement correct.\n"); }
+     DEBUT var_list EXECUTION DINS inst_list FINS FIN { printf("Programme syntaxiquement correct.\n"); YYACCEPT;}
     ;
     
 
 
 var_list:
-    var_list var 
-    | var
+     var_list var ';' 
+    | var ';'
     ;
 
 
 
 
 var:
- DNUM ID ';'
+ DNUM ID  { insererType($2,$1); }
  |
- DNUM ID aff NUM ';';
+ DNUM ID aff NUM  
  |
- DREAL ID ';'
+ DREAL ID 
  |
- DREAL ID aff REAL ';'
+ DREAL ID aff REAL 
  |
- DTEXT ID ';'
+ DTEXT ID 
  |
- DTEXT ID aff TEXT ';' 
+ DTEXT ID aff TEXT  
  ;
 
 
-inst_list:
+ inst_list:
  inst_list stmt
  |
  stmt
@@ -59,6 +61,8 @@ stmt:
     ID aff val ';' 
     
     ;
+
+
 val:
    val opera ID  
    |
@@ -80,12 +84,18 @@ opera:
   |
   '*'
   
-  ;   
+  ;  
+
+  
 %%
 int yyerror(char *msg) {
-    fprintf(stderr, "Erreur syntaxique : %s\n", msg);
+    fprintf(stderr, "Erreur syntaxique : %s\n a la ligne %d", msg,yylineno);
     return 0;
 }
 int main() {
-    return yyparse();
+     yyparse();
+    afficher();
+}
+yywrap(){
+
 }
