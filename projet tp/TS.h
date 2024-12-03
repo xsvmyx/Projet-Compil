@@ -7,6 +7,7 @@ typedef struct
   char NomEntite[20];
   char CodeEntite[20];
   char TypeEntite[20];
+  char ValEntite[20];
 } TypeTS;
 
 TypeTS ts[100];
@@ -53,6 +54,17 @@ void insererType(char entite[], char type[])
     }
 }
 
+void insererTypeVal(char entite[], char type[],char val[])
+{
+    int posEntite=recherche(entite);
+    if (posEntite!=-1) // si l'entité existe dans la TS
+    { 
+        strcpy(ts[posEntite].TypeEntite,type);
+        strcpy(ts[posEntite].ValEntite,val);
+        //printf("lentite est %s, son type est %s\n",ts[posEntite].NomEntite,ts[posEntite].TypeEntite);
+    }
+}
+
 // Fonction RechercheType : retourne le type de l'entité
 int rechercheType(char entite[])
 {
@@ -65,14 +77,14 @@ int rechercheType(char entite[])
 //Fonction d'affichage de la TS
 void afficher()
 {
-  printf("\n/***************Table des symboles ******************/\n");
-  printf("__________________________________________________\n");
-  printf("\t| NomEntite |  CodeEntite  | TypeEntite \n");
-  printf("__________________________________________________\n");
+  printf("\n/**********************Table des symboles ************************/\n");
+  printf("__________________________________________________________\n");
+  printf("\t| NomEntite |  CodeEntite  | TypeEntite | ValEntite \n");
+  printf("__________________________________________________________\n");
   int i = 0;
   while (i < CpTS)
   {
-    printf("\t|%10s |%12s  |%12s |\n", ts[i].NomEntite, ts[i].CodeEntite,ts[i].TypeEntite);
+    printf("\t|%10s |%12s  |%12s |%12s |\n", ts[i].NomEntite, ts[i].CodeEntite,ts[i].TypeEntite,ts[i].ValEntite);
     i++;
   }
 }
