@@ -1,9 +1,12 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "TS.h"
 extern yylineno;
 char SauvType[20];
+char SaveType[20];
+int pos;
+char nom[20];
 %}
 
 %union {
@@ -16,7 +19,7 @@ char SauvType[20];
 %token <real> REAL // REAL contient un float 
 %token <text> TEXT // TEXT contient une chaîne de caractères
  
-%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM,DREAL,DTEXT
+%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE
 
 %%
 program:
@@ -26,41 +29,66 @@ program:
 
 
 var_list:
-     var_list var ';' 
-    | var ';'
+     TYPE var ';' var_list
+    | TYPE var ';'
     ;
 
 
 
 
 var:
- DNUM ID  { insererType($2,$1); }
+ var ',' ID  { 
+                                    if(rechercheType($3)==0) {insererType($3,SauvType);}
+                                    else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $3, yylineno); 
+                                 }
  |
- DNUM ID aff NUM  
+ ID   {     
+                  if (rechercheType($1)==0) insererType($1,SauvType);
+                  else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $1, yylineno);
+          }
  |
- DREAL ID 
+ decla
+ 
+ ;
+
+ TYPE:
+ DNUM {strcpy(SauvType,$1);}
  |
- DREAL ID aff REAL 
+ DREAL {strcpy(SauvType,$1);}
  |
- DTEXT ID 
- |
- DTEXT ID aff TEXT  
+ DTEXT{strcpy(SauvType,$1);}
  ;
 
 
  inst_list:
- inst_list stmt
+ inst_list stmt ';'
  |
- stmt
+ stmt ';'
  ;
 
+decla:
+ saveIDd aff val  {      
+                  if (pos==0) {insererType(nom,SauvType);  } 
+                  else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", nom, yylineno);}
+    
+    ;
 
 
 
 stmt:
-    ID aff val ';' 
+    saveID aff val   {    
+                  if (pos==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
+                  }
     
     ;
+
+saveIDd:
+   ID {strcpy(SaveType,SauvType); pos = rechercheType($1); strcpy(nom,$1);}
+   ;
+
+saveID:
+   ID {strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); strcpy(nom,$1);}
+   ;
 
 
 val:
@@ -72,9 +100,12 @@ val:
    |
    val '/' NUM {if($3 == 0) printf("Erreur semantique a la ligne %d division par zero \n",yylineno);}
    |
-   ID  
+   ID  {if (rechercheType($1)==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,$1);
+        else{if(strcmp(SaveType,ts[recherche($1)].TypeEntite)!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);}}
    |
-   NUM  
+   NUM  {if(strcmp(SaveType,"NUM")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);}
+   |
+   REAL {if(strcmp(SaveType,"REAL")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);}
    ;
 
 opera:
