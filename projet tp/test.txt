@@ -1,16 +1,24 @@
+
+
+
 DEBUT 
-NUM x <- 5;
-TEXT t<-"hello";
-NUM i <-2;
+NUM : x = 5;
+TEXT : t="hello";
+NUM : i =2;
+NUM : tg;
+NUM: f,g,h;
+FIXE NUM : lo = 5;
 
 
 {-
 -}
-REAL x1<- -5.8;
+REAL: x1= -5.8;
 
 EXECUTION
 {
-x<-i+5*i/5;
+    
+
+   x<-i+5*i/5;
 SI (i<=x1) 
 	{ tg <- tg+9; }
 SINON { SI(i>0) {tg <- 0;} 
@@ -24,6 +32,7 @@ SINON {
 
 
 
-x<-i+5*i/0;
+
+
 }
 FIN
