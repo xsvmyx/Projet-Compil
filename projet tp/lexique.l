@@ -1,6 +1,6 @@
 %{
 #include "syntax.tab.h"
-#include "TS.h"
+
 extern YYSTYPE yylval;
 %}
 %option yylineno
@@ -18,7 +18,8 @@ FIN {return FIN;}
 "*" {return '*';}
 "/" {return '/';}
 ";"  { return ';'; }
-[a-zA-Z][a-zA-Z0-9_]* { yylval.text = strdup(yytext); inserer(yytext,"id"); return ID; }
+"," {return ',';}
+[a-zA-Z][a-zA-Z0-9_]* { yylval.text = strdup(yytext); inserer(yytext,"ID");  return ID; }
 
 [0-9]+\.[0-9]+ { yylval.real = atof(yytext);  return REAL ;}
 [0-9]+        { yylval.num = atoi(yytext); return NUM; }
@@ -30,6 +31,6 @@ FIN {return FIN;}
 \} {return FINS;}
 
 
-.                    { printf("Caractère inattendu : %s\n", yytext); }
+.                  { printf("Caractère inattendu : %s\n", yytext); }
 
 %%
