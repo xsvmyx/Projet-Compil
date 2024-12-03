@@ -21,7 +21,7 @@ char value[20];
 %token <real> REAL // REAL contient un float 
 %token <text> TEXT // TEXT contient une chaîne de caractères
  
-%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE
+%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE FIXE
 
 %%
 program:
@@ -31,8 +31,10 @@ program:
 
 
 var_list:
-     TYPE var ';' var_list
-    | TYPE var ';'
+     TYPE ':' var ';' var_list
+    | TYPE ':' var ';'
+    | FIXE TYPE ':' decla ';' var_list
+    |FIXE TYPE ':' decla ';'
     ;
 
 
@@ -69,7 +71,7 @@ var:
  ;
 
 decla:
- saveIDd aff val  {      
+ saveIDd E val  {      
                   if (pos==0) {insererTypeVal(nom,SauvType,value);  } 
                   else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", nom, yylineno);}
     
@@ -162,7 +164,7 @@ ELT:
   
 %%
 int yyerror(char *msg) {
-    fprintf(stderr, "Erreur syntaxique : %s\n a la ligne %d", msg,yylineno);
+    fprintf(stderr, "Erreur syntaxique : %s a la ligne %d \n", msg,yylineno);
     return 0;
 }
 int main() {
