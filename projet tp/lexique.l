@@ -1,6 +1,6 @@
 %{
 #include "syntax.tab.h"
-#include "TS.h"
+
 extern YYSTYPE yylval;
 %}
 %option yylineno
@@ -19,6 +19,7 @@ FIN {return FIN;}
 "*" {return '*';}
 "/" {return '/';}
 ";"  { return ';'; }
+"," {return ',';}
 SI {return IF;}
 SINON {return ELSE;}
 TANTQUE {return WHILE;}
