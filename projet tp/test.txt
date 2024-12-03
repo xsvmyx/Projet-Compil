@@ -6,10 +6,24 @@ NUM i <-2;
 
 {-
 -}
-REAL x1<- 5.8;
+REAL x1<- -5.8;
 
 EXECUTION
 {
+x<-i+5*i/5;
+SI (i<=x1) 
+	{ tg <- tg+9; }
+SINON { SI(i>0) {tg <- 0;} 
+     }
+TANTQUE(i!=0){
+SI(i<0) {i<- i + 1;}
+SINON { 
+     i<- i - 1; 
+     }
+}
+
+
+
 x<-i+5*i/0;
 }
 FIN

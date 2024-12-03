@@ -11,12 +11,16 @@ char SauvType[20];
     float real;   
     char* text;     
 }
+%left '+' '-'    // priorité et associativité pour + et -
 
-%token <num> NUM   // NUM contient un int
+
+%token <num> NUM  // NUM contient un int
+
 %token <real> REAL // REAL contient un float 
+ 
 %token <text> TEXT // TEXT contient une chaîne de caractères
  
-%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM,DREAL,DTEXT
+%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE
 
 %%
 program:
@@ -48,44 +52,63 @@ var:
  ;
 
 
- inst_list:
- inst_list stmt
- |
- stmt
- ;
 
 
+val:
+    val '+' val       
+  | val '-' val       
+  | val '*' val       
+  | val '/' val { if ($3 == 0) printf("Erreur semantique a la ligne %d : division par zero\n", yylineno); }
+  | '(' val ')'       
+  | ID                
+  | NUM                           
+  | REAL                       
+
+
+
+
+inst_list:
+    inst_list stmt
+    |
+    stmt
+    ;
 
 
 stmt:
     ID aff val ';' 
-    
+    |
+    IF '(' COND ')' DINS stmt FINS
+    |
+    IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
+    |
+    WHILE '(' COND ')' DINS stmt FINS
     ;
 
 
-val:
-   val opera ID  
-   |
-   val opera NUM  
-   |
-   val '/' ID
-   |
-   val '/' NUM {if($3 == 0) printf("Erreur semantique a la ligne %d division par zero \n",yylineno);}
-   |
-   ID  
-   |
-   NUM  
-   ;
+COND: 
+    ELT E ELT 
+    |
+    ELT NE ELT
+    |
+    ELT S ELT
+    |
+    ELT SE ELT
+    |
+    ELT I ELT 
+    |
+    ELT IE ELT
+    ;
 
-opera:
-  '+'
-  |
-  '-'
-  |
-  '*'
-  
-  ;  
-
+ELT:
+    ID
+    |
+    NUM
+    |
+    REAL
+    |
+    TEXT
+    ;
+    
   
 %%
 int yyerror(char *msg) {
