@@ -12,6 +12,7 @@ FIN {return FIN;}
 "NUM" {yylval.text=strdup(yytext); return DNUM;}
 "REAL" {yylval.text=strdup(yytext); return DREAL;}
 "TEXT" {yylval.text=strdup(yytext); return DTEXT;}
+FIXE { return FIXE; }
 
 "<-" {return aff;}
 "+" {return '+';}
@@ -20,6 +21,7 @@ FIN {return FIN;}
 "/" {return '/';}
 ";"  { return ';'; }
 "," {return ',';}
+":" {return ':';}
 SI {return IF;}
 SINON {return ELSE;}
 TANTQUE {return WHILE;}
