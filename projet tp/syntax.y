@@ -7,6 +7,7 @@ char SauvType[20];
 char SaveType[20];
 int pos;
 char nom[20];
+
 char value[20];
 %}
 
@@ -31,10 +32,10 @@ program:
 
 
 var_list:
-     TYPE ':' var ';' var_list
-    | TYPE ':' var ';'
-    | FIXE TYPE ':' decla ';' var_list
-    |FIXE TYPE ':' decla ';'
+     TYPE ':' var ';' var_list 
+    | TYPE ':' var ';' 
+    | FIXE TYPE ':' decla ';' {insererValFixe(nom);} var_list 
+    |FIXE TYPE ':' decla ';' {insererValFixe(nom);}
     ;
 
 
@@ -42,12 +43,12 @@ var_list:
 
 var:
  var ',' ID  { 
-                                    if(rechercheType($3)==0) {insererType($3,SauvType);}
+                                    if(rechercheType($3)==0) {insererType($3,SauvType); }
                                     else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $3, yylineno); 
                                  }
  |
  ID   {     
-                  if (rechercheType($1)==0) insererType($1,SauvType);
+                  if (rechercheType($1)==0) {insererType($1,SauvType); }
                   else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $1, yylineno);
           }
  |
@@ -69,6 +70,8 @@ var:
  |
  stmt 
  ;
+
+
 
 decla:
  saveIDd E val  {      
@@ -125,7 +128,7 @@ val:
    |
    REAL {if(strcmp(SaveType,"REAL")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); else{snprintf(value,sizeof(value),"%f",$1);}}
    |
-   TEXT
+   TEXT {if(strcmp(SaveType,"TEXT")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); else{strcpy(value,$1);}}
    ;
 
 opera:
