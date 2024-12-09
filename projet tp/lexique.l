@@ -4,6 +4,7 @@
 extern YYSTYPE yylval;
 %}
 %option yylineno
+ID [a-zA-Z][a-zA-Z0-9_]* 
 %%
 
 DEBUT {return DEBUT;}
@@ -33,7 +34,9 @@ TANTQUE {return WHILE;}
 "!=" {return NE;}
 "(" {return '(';}
 ")" {return ')';}
-[a-zA-Z][a-zA-Z0-9_]* { yylval.text = strdup(yytext); inserer(yytext,"id"); return ID; }
+"[" {return '[';}
+"]" {return ']';}
+{ID} { yylval.text = strdup(yytext); inserer(yytext,"id"); return ID; }
 
 -?[0-9]+\.[0-9]+ { yylval.real = atof(yytext);  return REAL ;}
 
