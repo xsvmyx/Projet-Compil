@@ -5,9 +5,8 @@
 extern yylineno;
 char SauvType[20];
 char SaveType[20];
-int pos;
+int pos,p;
 char nom[20];
-
 char value[20];
 %}
 
@@ -38,6 +37,14 @@ var_list:
     |FIXE TYPE ':' decla ';' {insererValFixe(nom);}
     ;
 
+ TYPE:
+ DNUM {strcpy(SauvType,$1);}
+ |
+ DREAL {strcpy(SauvType,$1);}
+ |
+ DTEXT{strcpy(SauvType,$1);}
+ ;
+
 
 
 
@@ -52,17 +59,27 @@ var:
                   else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $1, yylineno);
           }
  |
+  ID '[' NUM ']' { 
+                  if($3<=0) {printf("erreur semantique à la ligne %d : taille de tableau invalide %d\n",yylineno,$3);}
+                  else{
+                  if (rechercheType($1)==0){ insererTypeTaille($1,SauvType,$3);  }
+                  else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", $1, yylineno);}
+          }
+|
  decla 
  
  ;
 
- TYPE:
- DNUM {strcpy(SauvType,$1);}
- |
- DREAL {strcpy(SauvType,$1);}
- |
- DTEXT{strcpy(SauvType,$1);}
- ;
+ decla:
+ saveIDd E val  {      
+                  if (pos==0) {insererTypeVal(nom,SauvType,value);  } 
+                  else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", nom, yylineno);}
+    
+    ;
+
+saveIDd:
+   ID {strcpy(SaveType,SauvType); pos = rechercheType($1); strcpy(nom,$1);}
+   ;
 
 
  inst_list:
@@ -73,18 +90,14 @@ var:
 
 
 
-decla:
- saveIDd E val  {      
-                  if (pos==0) {insererTypeVal(nom,SauvType,value);  } 
-                  else printf("Erreur Semantique: double declation de %s, a la ligne %d\n", nom, yylineno);}
-    
-    ;
+
 
 
 
 stmt:
     saveID aff val ';'  {    
                   if (pos==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
+                  if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
                   }
     |
     IF '(' COND ')' DINS stmt FINS
@@ -96,13 +109,17 @@ stmt:
     
     ;
 
-saveIDd:
-   ID {strcpy(SaveType,SauvType); pos = rechercheType($1); strcpy(nom,$1);}
+saveID:
+   ID {strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); p=recherche($1); strcpy(nom,$1);}
+   |
+   ID '[' NUM ']' { 
+         strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); strcpy(nom,$1);
+         if(!ts[recherche($1)].Taille){ printf("Erreur Semantique a la ligne %d : variable '%s' n'est pas un tableau!!\n",yylineno,$1); }
+         else if($3>ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);           
+    }
+   
    ;
 
-saveID:
-   ID {strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); strcpy(nom,$1);}
-   ;
 
 
 val:
@@ -129,6 +146,12 @@ val:
    REAL {if(strcmp(SaveType,"REAL")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); else{snprintf(value,sizeof(value),"%f",$1);}}
    |
    TEXT {if(strcmp(SaveType,"TEXT")!=0) printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); else{strcpy(value,$1);}}
+   |
+   ID '[' NUM ']' {if (rechercheType($1)==0)  printf("ErreuR semantique a la ligne %d, variable %s non declaree \n",yylineno,$1);
+        else {if(ts[recherche($1)].Taille==0) printf("Erreur Semantique a la ligne %d: variable '%s' n'est pas un tableau!!\n",yylineno,$1);     
+        else {if($3>ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);                                          
+        else{if(strcmp(SaveType,ts[recherche($1)].TypeEntite)!=0) printf("ErreuR semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);
+        else strcpy(value,ts[recherche($1)].ValEntite);}}}}
    ;
 
 opera:
