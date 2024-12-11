@@ -112,7 +112,7 @@ stmt:
                     infixToPostfix(in,pre);
                   
                     if(possible) {
-                        if(strcmp(ts[p].TypeEntite,"REAL")==0) { snprintf(value2,sizeof(value2),"%f",evaluatePostfixFloat(pre)); } else
+                        if(strcmp(ts[p].TypeEntite,"REAL")==0) { snprintf(value2,sizeof(value2),"%.2f",evaluatePostfixFloat(pre)); } else
                          if(strcmp(ts[p].TypeEntite,"NUM")==0) { snprintf(value2,sizeof(value2),"%d",evaluatePostfix(pre)); } 
                         insererVal(nom,value2);
                         } 
@@ -138,7 +138,7 @@ saveID:
    ID '[' NUM ']' { 
          strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); strcpy(nom,$1);
          if(!ts[recherche($1)].Taille){ printf("Erreur Semantique a la ligne %d : variable '%s' n'est pas un tableau!!\n",yylineno,$1); }
-         else if($3>ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);           
+         else if($3>=ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);           
     }
    
    ;
@@ -178,7 +178,7 @@ val:
    |
    ID '[' NUM ']' {if (rechercheType($1)==0)  printf("ErreuR semantique a la ligne %d, variable %s non declaree \n",yylineno,$1);
         else {if(ts[recherche($1)].Taille==0) printf("Erreur Semantique a la ligne %d: variable '%s' n'est pas un tableau!!\n",yylineno,$1);     
-        else {if($3>ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);                                          
+        else {if($3>=ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);                                          
         else{if(strcmp(SaveType,ts[recherche($1)].TypeEntite)!=0) printf("ErreuR semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);
         else strcpy(value,ts[recherche($1)].ValEntite);}}}}
    ;
