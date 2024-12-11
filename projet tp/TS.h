@@ -79,6 +79,7 @@ void insererTypeVal(char entite[], char type[],char val[])
     }
 }
 
+//fonction pour inserer les constantes
 void insererValFixe(char entite[])
 {
     int posEntite=recherche(entite);
@@ -86,6 +87,18 @@ void insererValFixe(char entite[])
     { 
         strcpy(ts[posEntite].ValFixe,"OUI");
         
+        //printf("lentite est %s, son type est %s\n",ts[posEntite].NomEntite,ts[posEntite].TypeEntite);
+    }
+}
+
+//fonction pour inserer les valeurs lors des instructions
+void insererVal(char entite[],char val[])
+{
+    int posEntite=recherche(entite);
+    if (posEntite!=-1) // si l'entité existe dans la TS
+    { 
+       
+        strcpy(ts[posEntite].ValEntite,val);
         //printf("lentite est %s, son type est %s\n",ts[posEntite].NomEntite,ts[posEntite].TypeEntite);
     }
 }
