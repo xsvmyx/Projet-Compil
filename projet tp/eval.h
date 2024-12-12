@@ -282,3 +282,23 @@ float evaluatePostfixFloat(const char *postfix) {
     
 }
 
+//évaluation expression logique
+int evaluatePostfixLogiqueInt(const char *postfix){
+ int i = evaluatePostfix(postfix);
+ if (i!=0) return 1;
+ else return 0;
+
+ return -1;
+}
+
+
+//évaluation expression logique float
+int evaluatePostfixLogiqueFloat(const char *postfix){
+ float i = evaluatePostfixFloat(postfix);
+ if (i!=0) return 1;
+ else return 0;
+
+ return -1;
+}
+
+
