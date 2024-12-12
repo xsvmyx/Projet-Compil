@@ -15,6 +15,7 @@ char *in ;
 char *pre;
 int possible;
 char inter[20];
+int nop;
 %}
 
 %union {
@@ -29,7 +30,7 @@ char inter[20];
 %token <real> REAL // REAL contient un float 
 %token <text> TEXT // TEXT contient une chaîne de caractères
  
-%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE FIXE
+%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE FIXE AND OR NO
 
 %%
 program:
@@ -104,7 +105,18 @@ saveIDd:
 
 
 stmt:
-    saveID aff{strcpy(in,"");} val ';'  {    
+    saveID aff{strcpy(in,"");} choix ';'  
+    |
+    IF '(' COND ')' DINS stmt FINS
+    |
+    IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
+    |
+    WHILE '(' COND ')' DINS stmt FINS              
+                  
+    
+    ;
+choix:
+    val {    
                   if (pos==0) printf("Erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
                   if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
                   else{
@@ -123,14 +135,79 @@ stmt:
                   }
                   }
     |
-    IF '(' COND ')' DINS stmt FINS
-    |
-    IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
-    |
-    WHILE '(' COND ')' DINS stmt FINS              
-                  
-    
+    logi
     ;
+
+
+logi:
+   val {    
+                  if (pos==0) printf("Erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
+                  if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
+                  else{
+
+                    infixToPostfix(in,pre);
+                    printf("je suis possible : %d\n",possible);
+                  
+                    if(possible ) {
+                        int i =5;
+                        nop = 1;
+                        
+                        if(strcmp(ts[p].TypeEntite,"REAL")==0) { i= evaluatePostfixLogiqueFloat(pre);  if(i==0){ insererVal(nom,"0.0"); nop = 0;} } else
+                         if(strcmp(ts[p].TypeEntite,"NUM")==0) { i= evaluatePostfixLogiqueInt(pre);   if(i==0){ insererVal(nom,"0"); nop = 0; }} 
+
+                        } 
+                    possible=1;
+                    strcpy(pre,"");
+                    strcpy(in,"");
+
+                  }
+                  }
+   AND
+   val {    
+                  if (pos==0) printf("Erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
+                  if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
+                  else{
+
+                    infixToPostfix(in,pre);
+                  
+                    if(possible && nop) {
+                        int i;
+                        printf("je suis p : %d \n",p);
+                        if(strcmp(ts[p].TypeEntite,"REAL")==0) { i= evaluatePostfixLogiqueFloat(pre);if(i==0){ insererVal(nom,"0.0"); nop = 0;} } else
+                         if(strcmp(ts[p].TypeEntite,"NUM")==0) { i= evaluatePostfixLogiqueInt(pre);  if(i==0){ insererVal(nom,"0"); nop = 0; } } 
+
+                        } }
+                    possible=1;
+                    strcpy(pre,"");
+                    strcpy(in,"");
+
+                  }
+                  
+   |
+   logi AND val {    
+                  if (pos==0) printf("Erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
+                  if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
+                  else{
+
+                    infixToPostfix(in,pre);
+                    printf("je suis possible : %d\n",possible);
+                  
+                    if(possible && nop) {
+                        int i =5;
+                        nop = 1;
+                        
+                        if(strcmp(ts[p].TypeEntite,"REAL")==0) { i= evaluatePostfixLogiqueFloat(pre);  if(i==0){ insererVal(nom,"0.0"); } else  insererVal(nom,"1.0"); } else
+                         if(strcmp(ts[p].TypeEntite,"NUM")==0) { i= evaluatePostfixLogiqueInt(pre);   if(i==0){ insererVal(nom,"0");  } else insererVal(nom,"1");} 
+
+                        } 
+                    possible=1;
+                    strcpy(pre,"");
+                    strcpy(in,"");
+
+                  }
+                  }
+   ;
+
 
 saveID:
    ID {strcpy(SaveType,ts[recherche($1)].TypeEntite); pos = rechercheType($1); p=recherche($1); strcpy(nom,$1);}
@@ -181,7 +258,9 @@ val:
         else {if($3>=ts[recherche($1)].Taille) printf("Erreur Semantique a la ligne %d : Index hors limites \n",yylineno,$1);                                          
         else{if(strcmp(SaveType,ts[recherche($1)].TypeEntite)!=0) printf("ErreuR semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType);
         else strcpy(value,ts[recherche($1)].ValEntite);}}}}
+      
    ;
+   
 
 opera:
   '+' {strcpy(inter,"+");}
@@ -207,7 +286,7 @@ opera:
     ;
 
 ELT:
-    ID
+    ID  {if (rechercheType($1)==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,$1);}
     |
     NUM
     |
