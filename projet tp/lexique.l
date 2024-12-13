@@ -14,6 +14,8 @@ FIN {return FIN;}
 "REAL" {yylval.text=strdup(yytext); return DREAL;}
 "TEXT" {yylval.text=strdup(yytext); return DTEXT;}
 FIXE { return FIXE; }
+lire {return INPUT;}
+affiche {return OUTPUT;}
 
 "<-" {return aff;}
 "+" {return '+';}
@@ -26,6 +28,10 @@ FIXE { return FIXE; }
 SI {return IF;}
 SINON {return ELSE;}
 TANTQUE {return WHILE;}
+"ET" {return AND;}
+"OU" {return OR;}
+"NON" {return NO;}
+
 ">" {return S;}
 ">=" {return SE;}
 "<" {return I;}
