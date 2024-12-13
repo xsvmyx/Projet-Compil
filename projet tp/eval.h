@@ -144,12 +144,15 @@ float peekFloatStack(FloatStack *s) {
 // Détermine la priorité des opérateurs
 int precedence(char op) {
     switch (op) {
-        case '+':
-        case '-': return 1;
         case '*':
-        case '/': return 2;
-        case '(': return 0;
-        default: return -1;
+        case '/': return 3;
+        case '+':
+        case '-': return 2;
+        case 'N': return 1;  // NOT operator precedence
+        case 'A': return 0;  // AND operator precedence
+        case 'O': return -1;  // OR operator precedence
+        case '(': return -2;
+        default: return -3;
     }
 }
 
@@ -178,6 +181,27 @@ void infixToPostfix(const char *infix, char *postfix) {
             }
             popCharStack(&s); // Supprime '(' de la pile
             i++;
+        } else if (strncmp(&infix[i], "AND", 3) == 0) {
+            while (!isEmptyCharStack(&s) && precedence(peekCharStack(&s)) >= precedence('A')) {
+                postfix[k++] = popCharStack(&s);
+                postfix[k++] = ' ';
+            }
+            pushCharStack(&s, 'A');
+            i += 3;
+        } else if (strncmp(&infix[i], "OR", 2) == 0) {
+            while (!isEmptyCharStack(&s) && precedence(peekCharStack(&s)) >= precedence('O')) {
+                postfix[k++] = popCharStack(&s);
+                postfix[k++] = ' ';
+            }
+            pushCharStack(&s, 'O');
+            i += 2;
+        } else if (strncmp(&infix[i], "NOT", 3) == 0) {
+            while (!isEmptyCharStack(&s) && precedence(peekCharStack(&s)) >= precedence('N')) {
+                postfix[k++] = popCharStack(&s);
+                postfix[k++] = ' ';
+            }
+            pushCharStack(&s, 'N');
+            i += 3;
         } else {
             while (!isEmptyCharStack(&s) && precedence(peekCharStack(&s)) >= precedence(token)) {
                 postfix[k++] = popCharStack(&s);
@@ -200,18 +224,18 @@ void infixToPostfix(const char *infix, char *postfix) {
 int evaluatePostfix(const char *postfix) {
     IntStack s;
     initIntStack(&s);
-    int i;
-    for (i = 0; postfix[i] != '\0'; i++) {
+    int num = 0;
+    int i = 0;
+    while (postfix[i] != '\0') {
         if (isdigit(postfix[i])) {
-            int num = 0;
             while (isdigit(postfix[i])) {
                 num = num * 10 + (postfix[i] - '0');
                 i++;
             }
             pushIntStack(&s, num);
-            i--;
+            num = 0;
         } else if (postfix[i] == ' ') {
-            continue;
+            i++;
         } else {
             int val2 = popIntStack(&s);
             int val1 = popIntStack(&s);
@@ -221,13 +245,17 @@ int evaluatePostfix(const char *postfix) {
                 case '-': pushIntStack(&s, val1 - val2); break;
                 case '*': pushIntStack(&s, val1 * val2); break;
                 case '/': pushIntStack(&s, val1 / val2); break;
+                case 'A': pushIntStack(&s, val1 && val2); break;
+                case 'O': pushIntStack(&s, val1 || val2); break;
+                case 'N': pushIntStack(&s, !val2); break;  // NOT operator
             }
+            i++;
         }
     }
-
     return popIntStack(&s);
 }
 
+// Évaluation de la notation postfixe (flottants)
 // Évaluation de la notation postfixe (flottants)
 float evaluatePostfixFloat(const char *postfix) {
     FloatStack s;
@@ -236,7 +264,6 @@ float evaluatePostfixFloat(const char *postfix) {
     int i = 0;
     while (postfix[i] != '\0') {
         if (isdigit(postfix[i]) || postfix[i] == '.') {
-            
             int decimal_place = -1;
             while (isdigit(postfix[i]) || postfix[i] == '.') {
                 if (postfix[i] == '.') {
@@ -245,25 +272,17 @@ float evaluatePostfixFloat(const char *postfix) {
                     if (decimal_place == -1) {
                         num = num * 10 + (postfix[i] - '0');
                     } else {
+                        num += (postfix[i] - '0') * pow(10, decimal_place);
                         decimal_place++;
-                        float m = pow(10, decimal_place);
-                        
-                        float bro = (postfix[i] - '0') / m;
-                        num = num + bro ;
-                        
-                        
                     }
                 }
-                
                 i++;
             }
             pushFloatStack(&s, num);
-            
+            num = 0.0;
         } else if (postfix[i] == ' ') {
-            num=0.0;
             i++;
         } else {
-            num = 0.0;
             float val2 = popFloatStack(&s);
             float val1 = popFloatStack(&s);
 
@@ -272,33 +291,13 @@ float evaluatePostfixFloat(const char *postfix) {
                 case '-': pushFloatStack(&s, val1 - val2); break;
                 case '*': pushFloatStack(&s, val1 * val2); break;
                 case '/': pushFloatStack(&s, val1 / val2); break;
+                case 'A': pushFloatStack(&s, val1 && val2); break;
+                case 'O': pushFloatStack(&s, val1 || val2); break;
+                case 'N': pushFloatStack(&s, !val2); break;  // NOT operator
             }
             i++;
         }
     }
-    float fin = popFloatStack(&s);
-     
-    return fin;
-    
+    return popFloatStack(&s);
 }
-
-//évaluation expression logique
-int evaluatePostfixLogiqueInt(const char *postfix){
- int i = evaluatePostfix(postfix);
- if (i!=0) return 1;
- else return 0;
-
- return -1;
-}
-
-
-//évaluation expression logique float
-int evaluatePostfixLogiqueFloat(const char *postfix){
- float i = evaluatePostfixFloat(postfix);
- if (i!=0) return 1;
- else return 0;
-
- return -1;
-}
-
 
