@@ -113,6 +113,16 @@ int rechercheType(char entite[])
 }
 
 
+int verifTableau(char nom[],int indice, int line,char SaveType[]){
+  if (rechercheType(nom)==0)  {printf("ErreuR semantique a la ligne %d, variable %s non declaree \n",line,nom); return 0;}
+        else {if(ts[recherche(nom)].Taille==0) {printf("Erreur Semantique a la ligne %d: variable '%s' n'est pas un tableau!!\n",line,nom);  return 0; }   
+        else {if(indice>=ts[recherche(nom)].Taille || indice<0 ) {printf("Erreur Semantique a la ligne %d : Index hors limites \n",line,nom); return 0;}                                          
+        else{if(strcmp(SaveType,ts[recherche(nom)].TypeEntite)!=0) {printf("ErreuR semantique a la ligne %d, variables de type different %s \n",line,SaveType); return 0;}
+        }}}
+        return 1;
+}
+
+
 
 
 //Fonction d'affichage de la TS
