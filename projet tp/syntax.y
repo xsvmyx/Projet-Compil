@@ -8,7 +8,7 @@
 extern yylineno;
 char SauvType[20];
 char SaveType[20];
-int pos,p;
+int pos,p,r;
 char nom[20];
 char value[20];
 char value2[20];
@@ -18,6 +18,8 @@ int possible;
 char inter[20];
 int jesuis;
 int ind;
+int nega=0;
+float f;
 
 %}
 
@@ -33,7 +35,7 @@ int ind;
 %token <real> REAL // REAL contient un float 
 %token <text> TEXT // TEXT contient une chaîne de caractères
  
-%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE FIXE AND OR NO INPUT OUTPUT
+%token aff DEBUT EXECUTION DINS FINS FIN <text>ID DNUM DREAL DTEXT IF S SE I IE E NE ELSE WHILE FIXE AND OR NO INPUT OUTPUT NOT
 
 %%
 program:
@@ -48,6 +50,7 @@ var_list:
     | FIXE TYPE ':' decla ';' {insererValFixe(nom);} var_list 
     |FIXE TYPE ':' decla ';' {insererValFixe(nom);}
     ;
+
 
  TYPE:
  DNUM {strcpy(SauvType,$1);}
@@ -109,6 +112,7 @@ saveIDd:
 
 
 stmt:
+    
     saveID aff{strcpy(in,"");} val ';'  {    
                   if (pos==0) printf("Erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,nom);
                   if (strcmp(ts[p].ValFixe,"OUI" )==0) printf("erreur semantique a la ligne %d, affectation sur une variable FIXE. \n",yylineno);
@@ -131,7 +135,10 @@ stmt:
 
                   }
                   }
+    
     |
+    
+   
     IF '(' COND ')' DINS stmt FINS
     |
     IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
@@ -165,12 +172,25 @@ saveID:
 
 
 val:
+
    val opera  ID  {strcpy(value,ts[recherche($3)].ValEntite); strcat(in,inter); strcat(in,value);}
+   |
+   val opera NOT ID  {     nega=!atoi(ts[recherche($4)].ValEntite);    snprintf(value,sizeof(value),"%d",nega); strcat(in,inter); strcat(in,value);}
    |
    val opera NUM  {snprintf(value,sizeof(value),"%d",$3); strcat(in,inter); strcat(in,value);}
    |
+   val opera NOT NUM  { snprintf(value,sizeof(value),"%d",!$4); strcat(in,inter); strcat(in,value);}
+   |
    val opera REAL {snprintf(value,sizeof(value),"%f",$3); strcat(in,inter); strcat(in,value);}
    |
+   val opera ID '[' NUM ']' {
+        if(strcmp(ts[recherche($3)].TypeEntite,"NUM")==0){ 
+                                                            snprintf(value,sizeof(value),"%d",t[rechercheTab($3)].adresseInt[$5 -'0']); strcat(in,inter); strcat(in,value);}
+        else 
+        if(strcmp(ts[recherche($3)].TypeEntite,"REAL")==0){snprintf(value,sizeof(value),"%.2f",t[rechercheTab($3)].adresseFloat[$5] - '0'); strcat(in,inter); strcat(in,value);}
+   }                 
+   |
+
    val '/' ID {
                  if(strcmp(ts[recherche($3)].ValEntite,"0")==0) {printf("Erreur semantique a la ligne%d, diision par zero\n",yylineno); possible=0; strcpy(in,"");}
                 else{
@@ -183,12 +203,26 @@ val:
    val '/' REAL {if($3 == 0.0) {printf("Erreur semantique a la ligne %d, division par zero \n",yylineno); possible=0; strcpy(in,"");}
                 else{snprintf(value,sizeof(value),"%f",$3); strcat(in,"/"); strcat(in,value);}}
    |
+   val '/' ID '[' NUM ']'  {
+        if(strcmp(ts[recherche($3)].TypeEntite,"NUM")==0){  r=t[rechercheTab($3)].adresseInt[$5 -'0'];
+                                                            if(r==0){printf("Erreur semantique a la ligne%d, diision par zero\n",yylineno); possible=0; strcpy(in,"");}
+                                                            snprintf(value,sizeof(value),"%d",r); strcat(in,"/"); strcat(in,value);}
+        else 
+        if(strcmp(ts[recherche($3)].TypeEntite,"REAL")==0){ f=t[rechercheTab($3)].adresseFloat[$5] - '0';
+                                                            if(!f) {printf("Erreur semantique a la ligne%d, diision par zero\n",yylineno); possible=0; strcpy(in,""); }
+                                                            snprintf(value,sizeof(value),"%.2f",f); strcat(in,"/"); strcat(in,value);}
+   }
+   |
     '(' val ')' 
      
    |
    ID  {if (rechercheType($1)==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,$1);
         else{if(strcmp(SaveType,ts[recherche($1)].TypeEntite)!=0) {printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); possible=0;}
         else strcpy(value,ts[recherche($1)].ValEntite);} strcat(in,value);}
+   |
+   NOT ID  {if (rechercheType($2)==0) printf("erreur semantique a la ligne %d, variable %s non declaree \n",yylineno,$2);
+        else{if(strcmp(SaveType,ts[recherche($2)].TypeEntite)!=0) {printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); possible=0;}
+        else snprintf(value,sizeof(value),"%d",!atoi(ts[recherche($2)].ValEntite));} strcat(in,value);}
    |
    NUM  {if(strcmp(SaveType,"NUM")!=0) {printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); possible=0;} else{snprintf(value,sizeof(value),"%d",$1); strcat(in,value);}}
    |
@@ -206,12 +240,14 @@ val:
         if(strcmp(ts[recherche($1)].TypeEntite,"REAL")==0){snprintf(value,sizeof(value),"%.2f",t[rechercheTab($1)].adresseFloat[$3] - '0'); strcat(in,value);}
         }}}}
     |
+    NOT NUM  {if(strcmp(SaveType,"NUM")!=0) {printf("erreur semantique a la ligne %d, variables de type different %s \n",yylineno,SaveType); possible=0;} else {   snprintf(value,sizeof(value),"%d",!$2);  strcat(in,value);}}
+
+    
     
         
       
    ;
    
-
 opera:
   '+' {strcpy(inter,"+");}
   |
