@@ -144,20 +144,25 @@ float peekFloatStack(FloatStack *s) {
 // Détermine la priorité des opérateurs
 int precedence(char op) {
     switch (op) {
+        case 'N': return 3;
         case '*':
-        case '/': return 3;
+        case '/': return 2;
         case '+':
-        case '-': return 2;
-        case 'N': return 1;  // NOT operator precedence
+        case '-': return 1;
+          
         case 'A': return 0;  // AND operator precedence
         case 'O': return -1;  // OR operator precedence
         case '(': return -2;
         default: return -3;
     }
 }
+int isOperator(char ch) {
+    return ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == 'D' || ch == 'R' || ch == 'T' ;
+}
 
 // Conversion infixe vers postfixe (en utilisant la pile de char)
-void infixToPostfix(const char *infix, char *postfix) {
+
+   void infixToPostfix(const char *infix, char *postfix) {
     CharStack s;
     initCharStack(&s);
     int k = 0;
@@ -166,7 +171,17 @@ void infixToPostfix(const char *infix, char *postfix) {
     while (infix[i] != '\0') {
         char token = infix[i];
 
+        // Gérer les nombres signés
         if (isdigit(token) || token == '.') {
+            while (isdigit(infix[i]) || infix[i] == '.') {
+                postfix[k++] = infix[i++];
+            }
+            postfix[k++] = ' ';  // Ajouter un espace pour séparer les nombres
+        } else if (token == '-' && (i == 0 || infix[i - 1] == '(' || 
+                                    isOperator(infix[i - 1]) || infix[i - 1] == ' ')) {
+            // Si c'est le signe négatif, ajouter dans le postfix
+            postfix[k++] = token; 
+            i++;
             while (isdigit(infix[i]) || infix[i] == '.') {
                 postfix[k++] = infix[i++];
             }
@@ -196,7 +211,9 @@ void infixToPostfix(const char *infix, char *postfix) {
             pushCharStack(&s, 'O');
             i += 2;
         } else if (strncmp(&infix[i], "NOT", 3) == 0) {
+       
             while (!isEmptyCharStack(&s) && precedence(peekCharStack(&s)) >= precedence('N')) {
+              
                 postfix[k++] = popCharStack(&s);
                 postfix[k++] = ' ';
             }
@@ -220,6 +237,7 @@ void infixToPostfix(const char *infix, char *postfix) {
     postfix[k - 1] = '\0'; // Remplacer le dernier espace par le caractère nul
 }
 
+
 // Évaluation de la notation postfixe (entiers)
 int evaluatePostfix(const char *postfix) {
     IntStack s;
@@ -227,16 +245,33 @@ int evaluatePostfix(const char *postfix) {
     int num = 0;
     int i = 0;
     while (postfix[i] != '\0') {
-        if (isdigit(postfix[i])) {
+        if (isdigit(postfix[i]) || (postfix[i] == '-' && isdigit(postfix[i + 1]))) {
+            
+            int sign = 1;
+            
+            // Vérifier si le nombre est négatif
+            if (postfix[i] == '-') {
+                sign = -1;
+                i++;
+            }
+
+            // Construire le nombre entier
             while (isdigit(postfix[i])) {
                 num = num * 10 + (postfix[i] - '0');
                 i++;
             }
-            pushIntStack(&s, num);
+            pushIntStack(&s, num * sign);
             num = 0;
         } else if (postfix[i] == ' ') {
             i++;
-        } else {
+        } else
+        if(postfix[i] == 'N'){
+            printf("je suis la \n");
+            int val3 = popIntStack(&s);
+            pushIntStack(&s, !val3);
+            i++;
+        } else 
+        {
             int val2 = popIntStack(&s);
             int val1 = popIntStack(&s);
 
@@ -260,29 +295,44 @@ int evaluatePostfix(const char *postfix) {
 float evaluatePostfixFloat(const char *postfix) {
     FloatStack s;
     initFloatStack(&s);
-    float num = 0.0;
+    float num = 0.0;   
     int i = 0;
     while (postfix[i] != '\0') {
-        if (isdigit(postfix[i]) || postfix[i] == '.') {
+         if (isdigit(postfix[i]) || postfix[i] == '.' || (postfix[i] == '-' && isdigit(postfix[i + 1]))) {
             int decimal_place = -1;
+            int sign = 1;
+            
+            // Gestion du signe pour les nombres négatifs
+            if (postfix[i] == '-') {
+                sign = -1;
+                i++;  // Passer le signe "-"
+            }
+
             while (isdigit(postfix[i]) || postfix[i] == '.') {
                 if (postfix[i] == '.') {
                     decimal_place = 0;
-                } else {
+                } else { 
                     if (decimal_place == -1) {
                         num = num * 10 + (postfix[i] - '0');
                     } else {
-                        num += (postfix[i] - '0') * pow(10, decimal_place);
                         decimal_place++;
+                        num = num + (postfix[i] - '0') * pow(10, decimal_place * (-1));
                     }
                 }
                 i++;
             }
-            pushFloatStack(&s, num);
+
+            pushFloatStack(&s, num * sign);
             num = 0.0;
         } else if (postfix[i] == ' ') {
             i++;
-        } else {
+        } else
+        if(postfix[i] == 'N'){
+            float val3 = popFloatStack(&s);
+            pushFloatStack(&s, !val3);
+            i++;
+        }else
+         {
             float val2 = popFloatStack(&s);
             float val1 = popFloatStack(&s);
 
@@ -293,7 +343,7 @@ float evaluatePostfixFloat(const char *postfix) {
                 case '/': pushFloatStack(&s, val1 / val2); break;
                 case 'A': pushFloatStack(&s, val1 && val2); break;
                 case 'O': pushFloatStack(&s, val1 || val2); break;
-                case 'N': pushFloatStack(&s, !val2); break;  // NOT operator
+               
             }
             i++;
         }
