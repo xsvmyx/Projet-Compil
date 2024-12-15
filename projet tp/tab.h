@@ -64,11 +64,14 @@ void inserertab(char entite[],char type[], int taille)
 }
 
 void insererValCaseInt(char entite[],int val,int cas){
-  t[rechercheTab(entite)].adresseInt[cas]=val;
+  
+    t[rechercheTab(entite)].adresseInt[cas]=val;
 }
 
 void insererValCaseFloat(char entite[],float val,int cas){
+ 
   t[rechercheTab(entite)].adresseFloat[cas]=val;
+   
 }
 
 
