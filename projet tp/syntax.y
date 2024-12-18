@@ -139,11 +139,11 @@ stmt:
     |
     
    
-    IF '(' COND ')' DINS stmt FINS
+    IF '(' CONDI ')' DINS stmt FINS
     |
-    IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
+    IF '(' CONDI ')' DINS stmt FINS ELSE DINS stmt FINS
     |
-    WHILE '(' COND ')' DINS stmt FINS       
+    WHILE '(' CONDI ')' DINS stmt FINS       
     |
     OUTPUT '(' val ')'  ';' {printf("%s\n",value);    }   
     |
@@ -261,6 +261,12 @@ opera:
 
   
   ;  
+  CONDI:
+  COND
+  |
+  CONDI AND COND;
+  |
+  CONDI OR COND;
 
   COND: 
     ELT E ELT 
