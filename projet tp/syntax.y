@@ -135,11 +135,11 @@ stmt:
                   }
                   }
     |
-    IF '(' COND ')' DINS inst_list FINS
+    IF '(' CONDI ')' DINS inst_list FINS
     |
-    IF '(' COND ')' DINS inst_list FINS ELSE DINS inst_list FINS
+    IF '(' CONDI ')' DINS inst_list FINS ELSE DINS inst_list FINS
     |
-    WHILE '(' COND ')' DINS inst_list FINS       
+    WHILE '(' CONDI ')' DINS inst_list FINS       
     |
     OUTPUT '(' val ')'  ';' {printf("%s\n",value);    }   
     |
@@ -321,6 +321,14 @@ opera:
 
   
   ;  
+
+  CONDI:
+  COND
+  |
+  CONDI AND COND;
+  |
+  CONDI OR COND;
+
 
   COND: 
     ELT E ELT 
