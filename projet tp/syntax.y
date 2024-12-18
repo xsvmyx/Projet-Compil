@@ -135,11 +135,11 @@ stmt:
                   }
                   }
     |
-    IF '(' COND ')' DINS stmt FINS
+    IF '(' COND ')' DINS inst_list FINS
     |
-    IF '(' COND ')' DINS stmt FINS ELSE DINS stmt FINS
+    IF '(' COND ')' DINS inst_list FINS ELSE DINS inst_list FINS
     |
-    WHILE '(' COND ')' DINS stmt FINS       
+    WHILE '(' COND ')' DINS inst_list FINS       
     |
     OUTPUT '(' val ')'  ';' {printf("%s\n",value);    }   
     |
